@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>MCOPCrowdSale</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-sm-8 col-sm-push-2" style="padding-bottom: 20px;">
+          <h1 class="text-center">MCOPCrowdSale Admin</h1>
+          <hr/>
+          <strong>ContractAddress:</strong>
+          <a href="https://etherscan.io/adress/0x596c3Ff477F6069E4c9fFf48e0767661BE0fEE43" target="blank">
+            0x596c3Ff477F6069E4c9fFf48e0767661BE0fEE43
+          </a>
+          <br/>
+          <input type="text" class="form-control" id="defaultAccount" style="margin-top:10px;" placeholder="input default account" />
+          <button class="btn btn-primary" id="settingButton"style="margin-top:10px;"   type="button">Setting</button>
+          <button class="btn btn-primary" id="refresh"  style="margin-top:10px;" type="button">RefreshPage</button>
+        </div>
+      </div>
+
+      <div id="petsRow" class="row">
+        <div class="col-sm-6 col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Transfer Token</h3>
+            </div>
+            <div class="panel-body">
+              <!-- <h4>Balance</h4>
+              <strong>Balance</strong>: <span id="MCTBalance"></span>MCT<br/><br/> -->
+              <h4>Transfer</h4>
+              <input type="text" class="form-control" id="FromAddress" placeholder="From Address" />
+              <input type="text" class="form-control" id="ToAddress" style="margin-top:10px;" placeholder="To Address" />
+              <input type="text" class="form-control" id="Amount" style="margin-top:10px;"  placeholder="Amount" />
+              <button class="btn btn-primary" id="transferButton"style="margin-top:10px;"   type="button">Transfer</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Set Admin</h3>
+            </div>
+            <div class="panel-body">
+              <h4>Admin</h4>
+              <strong>Address</strong>:
+                <a href="https://etherscan.io/adress/0x596c3Ff477F6069E4c9fFf48e0767661BE0fEE43" target="blank" id="admin">
+                  #
+                </a><br/>
+              <h4>NewAddress</h4>
+              <input type="text" class="form-control" id="adminAdress" placeholder="Address" />
+              <button class="btn btn-primary" id="submitAddressButton"  style="margin-top:10px;" type="button">Submit</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Set Wallet</h3>
+            </div>
+            <div class="panel-body">
+              <h4>Wallet</h4>
+              <strong>Wallet</strong>:
+              <a href="https://etherscan.io/adress/0x596c3Ff477F6069E4c9fFf48e0767661BE0fEE43" target="blank" id="wallet">
+                #
+              </a><br/>
+              <h4>NewWallet</h4>
+              <input type="text" class="form-control" id="walletAdress" placeholder="Address" />
+              <button class="btn btn-primary" id="walletAddressButton"  style="margin-top:10px;" type="button">Submit</button>
+            </div>
+          </div>
+        </div>
+      </div>  
+      <div id="petsRow" class="row">
+        <div class="col-sm-6 col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Token Balance</h3>
+            </div>
+            <div class="panel-body">
+              <h4>Balance</h4>
+              <span id="MPCBalance"></span>&nbsp;MPC<br/><br/>
+              <input type="text" class="form-control" id="Address" placeholder="From Address" />
+              <button class="btn btn-primary" id="balanceButton"style="margin-top:10px;"   type="button">GetBalance</button>
+            </div>
+          </div>
+        </div>        
+        <div class="col-sm-6 col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Buy Token</h3>
+            </div>
+            <div class="panel-body">
+              <h4>BuyToken</h4>
+              <input type="text" class="form-control" id="eth" placeholder="eth" />
+              <button class="btn btn-primary" id="buyToken"  style="margin-top:10px;" type="button">Buy</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Pause Token&Sale</h3>
+            </div>
+            <div class="panel-body">
+              <h4>Sale Status:</h4>
+              <strong id="saleStatus">停止/启动</strong><br/>
+              <button class="btn btn-primary" id="pauseSaleButton" data-id="0" type="button"  style="margin-top:10px;">Paused</button>
+            </div>
+            <div class="panel-body">
+              <h4>Token Status:</h4>
+              <strong id="tokenStatus">停止/启动</strong><br/>
+              <button class="btn btn-primary" id="pauseTokenButton" data-id="0" type="button"  style="margin-top:10px;">Paused</button>
+            </div>
+          </div>
+        </div> 
+      </div>
+      <div id="petsRow" class="row">
+        <div class="col-sm-6 col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Set Min/Max Limit</h3>
+            </div>
+            <div class="panel-body">
+              <h4>Set Min/Max Limit Eth for Open Sale</h4>
+              <strong>Now</strong>: <span id="minLimit"></span>--<span id="maxLimit"></span>
+              <h4>NewValue</h4>
+              <select name="type">
+                <option value="min">minLimit</option>
+                <option value="max">maxLimit</option>
+              </select>
+              <input type="text" class="form-control" id="value" style="margin-top:10px;" placeholder="Address" />
+              <button class="btn btn-primary" id="limitButton"  style="margin-top:10px;" type="button">Submit</button>
+            </div>
+          </div>
+        </div>   
+        <div class="col-sm-6 col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Set White List</h3>
+            </div>
+            <div class="panel-body">
+              <h4>WhiteList</h4>
+              <input type="text" class="form-control" id="whiteList" placeholder="Address" />
+              <button class="btn btn-primary" id="whiteListButton"  style="margin-top:10px;" type="button">Submit</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Release Lock Token</h3>
+            </div>
+            <div class="panel-body">
+              <h4>UnLock After Time</h4>
+              <strong>5 years</strong>
+              <br/><br/>
+              <button class="btn btn-primary" id="releaseButton"  style="margin-top:10px;" type="button">Release</button>
+            </div>
+          </div>
+        </div> 
+      </div> 
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/web3.min.js"></script>
+    <script src="js/truffle-contract.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
