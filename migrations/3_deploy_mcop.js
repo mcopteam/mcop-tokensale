@@ -6,8 +6,7 @@ module.exports = function(deployer, network, accounts) {
   console.log(accounts[0]);
   if(network == 'develop' || network == 'test'){
     console.log('deploy MCOPCrowdSale contract to develop network, account address is '+accounts[0]);
-    let now = (new Date()).valueOf()/1000;
-    deployer.deploy(MCOPCrowdSale, accounts[0], accounts[1],accounts[2],accounts[3],accounts[4],accounts[5],now);
+    deployer.deploy(MCOPCrowdSale, accounts[0],accounts[1],accounts[2],accounts[3],accounts[4]);
 
   }else if(network == 'mine'){
     console.log('deploy MCOPCrowdSale contract to mine network, account address is '+accounts[0]);

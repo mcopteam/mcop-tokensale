@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.18;
 
 // File: zeppelin-solidity/contracts/ownership/Ownable.sol
 
@@ -328,20 +328,13 @@ contract MCOPToken is PausableToken {
 
     /// Constant token specific fields
     string public constant name = "MCOPToken";
-    string public constant symbol = "MPC";
+    string public constant symbol = "MLB";
     uint public constant decimals = 18;
 
-    /// mcop total tokens supply
-    uint public maxTotalSupply;
 
     /// Fields that are only changed in constructor
     /// mcop sale  contract
     address public minter; 
-
-    /// ICO start time
-    uint public startTime;
-    /// ICO end time
-    uint public endTime;
 
     /*
      * MODIFIERS
@@ -355,12 +348,6 @@ contract MCOPToken is PausableToken {
         assert(now > x);
         _;
     }
-
-    modifier maxTokenAmountNotReached (uint amount){
-        assert(totalSupply.add(amount) <= maxTotalSupply);
-        _;
-    }
-
     modifier validAddress( address addr ) {
         require(addr != address(0x0));
         require(addr != address(this));
@@ -371,20 +358,14 @@ contract MCOPToken is PausableToken {
      * CONSTRUCTOR 
      * 
      * @dev Initialize the MCOP Token
-     * @param _minter The MCOPCrowdSale Contract 
-     * @param _maxTotalSupply total supply token    
-     * @param _startTime ICO start time
-     * @param _endTime ICO End Time
+     * @param _minter The MCOPCrowdSale Contract  
      */
-    function MCOPToken(address _minter, address _admin, uint _maxTotalSupply, uint _startTime, uint _endTime) 
+    function MCOPToken(address _minter, address _admin) 
         public 
-        validAddress(_admin)
         validAddress(_minter)
-        {
+        validAddress(_admin)
+    {
         minter = _minter;
-        startTime = _startTime;
-        endTime = _endTime;
-        maxTotalSupply = _maxTotalSupply;
         transferOwnership(_admin);
     }
 
@@ -400,10 +381,8 @@ contract MCOPToken is PausableToken {
     function mint(address receipent, uint amount)
         external
         onlyMinter
-        maxTokenAmountNotReached(amount)
         returns (bool)
     {
-        require(now <= endTime);
         balances[receipent] = balances[receipent].add(amount);
         totalSupply = totalSupply.add(amount);
         return true;
@@ -474,7 +453,6 @@ contract TokenTimelock {
 // File: contracts/MCOPCrowdSale.sol
 
 /// @title MCOPCrowdSale Contract
-/// ICO Rules according: https://mcop.io/crowdsale
 /// For more information about this token sale, please visit https://mcop.io
 /// @author reedhong(http://xiaohong.me)
 contract MCOPCrowdSale is Pausable {
@@ -482,86 +460,36 @@ contract MCOPCrowdSale is Pausable {
 
     /// Constant fields
     /// mcop total tokens supply
-    uint public constant MCOP_TOTAL_SUPPLY = 10000000000 ether;
-    uint public constant MAX_SALE_DURATION = 3 weeks;
+    uint public constant MCOP_TOTAL_SUPPLY = 5000000000 ether;
 
     // release lock token after time
-    uint public constant LOCK_TIME =  5 years;
+    uint public constant LOCK_TIME =  180 days;
 
-    /// Exchange rates for first phase
-    uint public constant PRICE_RATE_FIRST = 20833;
-    /// Exchange rates for second phase
-    uint public constant PRICE_RATE_SECOND = 18518;
-    /// Exchange rates for last phase
-    uint public constant PRICE_RATE_LAST = 16667;
-
-
-    uint256 public minBuyLimit = 0.1 ether;
-    uint256 public maxBuyLimit = 100 ether;
-
-    uint public constant LOCK_STAKE = 800;  
-    uint public constant DEV_TEAM_STAKE = 98;     
-    uint public constant COMMUNITY_STAKE = 2;     
-    uint public constant PRE_SALE_STAKE = 60;      
-    uint public constant OPEN_SALE_STAKE = 40;
-
-    
-    uint public constant DIVISOR_STAKE = 1000;
+    uint public constant LOCK_STAKE = 48;  
+    uint public constant TEAM_STAKE = 8;     
+    uint public constant BASE_STAKE = 4;     
+    uint public constant ORG_STAKE = 15;      
+    uint public constant PERSONAL_STAKE = 25;
 
     // max open sale tokens
-    uint public constant MAX_OPEN_SOLD = MCOP_TOTAL_SUPPLY * OPEN_SALE_STAKE / DIVISOR_STAKE;
-    uint public constant STAKE_MULTIPLIER = MCOP_TOTAL_SUPPLY / DIVISOR_STAKE;
+    uint public constant STAKE_MULTIPLIER = MCOP_TOTAL_SUPPLY / 100;
 
-    /// All deposited ETH will be instantly forwarded to this address.
-    address public wallet;
-    address public presaleAddress;
+
     address public lockAddress;
     address public teamAddress;
-    address public communityAddress;
-    /// Contribution start time
-    uint public startTime;
-    /// Contribution end time
-    uint public endTime;
+    address public baseAddress;
+    address public orgAddress;
+    address public personalAddress;
 
-    /// Fields that can be changed by functions
-    /// Accumulator for open sold tokens
-    uint public openSoldTokens;
-    /// ERC20 compilant mcop token contact instance
     MCOPToken public mcopToken; 
 
     // lock token
     TokenTimelock public tokenTimelock; 
 
-    /// tags show address can join in open sale
-    mapping (address => uint) public fullWhiteList;
-
     /*
      * EVENTS
      */
-    event NewSale(address indexed destAddress, uint ethCost, uint gotTokens);
-    event NewWallet(address onwer, address oldWallet, address newWallet);
-    //event CheckWhiteList(address addr, uint flag);
-    //event WhiteList(address addr, uint flag);
-
-    modifier notEarlierThan(uint x) {
-        require(now >= x);
-        _;
-    }
-
-    modifier earlierThan(uint x) {
-        require(now < x);
-        _;
-    }
-
-    modifier ceilingNotReached() {
-        require(openSoldTokens < MAX_OPEN_SOLD);
-        _;
-    }  
-
-    modifier isSaleEnded() {
-        require(now > endTime || openSoldTokens >= MAX_OPEN_SOLD);
-        _;
-    }
+    event LockAddress(address onwer);
 
     modifier validAddress( address addr ) {
         require(addr != address(0x0));
@@ -569,209 +497,52 @@ contract MCOPCrowdSale is Pausable {
         _;
     }
 
-    function MCOPCrowdSale (address _admin, 
-        address _wallet, 
-        address _presaleAddress,
+    function MCOPCrowdSale( 
         address _lockAddress,
         address _teamAddress,
-        address _communityAddress,
-        uint _startTime 
+        address _baseAddress,
+        address _orgAddress,
+        address _personalAddress
+
         ) public 
-        validAddress(_admin) 
-        validAddress(_wallet) 
-        validAddress(_presaleAddress) 
         validAddress(_lockAddress) 
         validAddress(_teamAddress) 
-        validAddress(_communityAddress) 
+        validAddress(_baseAddress) 
+        validAddress(_orgAddress) 
+        validAddress(_personalAddress) 
         {
 
-        wallet = _wallet;
-        presaleAddress = _presaleAddress;
         lockAddress = _lockAddress;
         teamAddress = _teamAddress;
-        communityAddress = _communityAddress;        
-        startTime = _startTime;
-        endTime = startTime + MAX_SALE_DURATION;
+        baseAddress = _baseAddress;
+        orgAddress = _orgAddress;
+        personalAddress = _personalAddress;
 
-        openSoldTokens = 0;
-        /// Create mcop token contract instance
-        mcopToken = new MCOPToken(this, _admin, MCOP_TOTAL_SUPPLY, startTime, endTime);
+        mcopToken = new MCOPToken(this, msg.sender);
 
         tokenTimelock = new TokenTimelock(mcopToken, lockAddress, now + LOCK_TIME);
 
-        /// Reserve tokens according mcop ICO rules
-        mcopToken.mint(presaleAddress, PRE_SALE_STAKE * STAKE_MULTIPLIER);
         mcopToken.mint(tokenTimelock, LOCK_STAKE * STAKE_MULTIPLIER);
-        mcopToken.mint(teamAddress, DEV_TEAM_STAKE * STAKE_MULTIPLIER);
-        mcopToken.mint(communityAddress, COMMUNITY_STAKE * STAKE_MULTIPLIER);  
-
-        transferOwnership(_admin);
+        mcopToken.mint(teamAddress, TEAM_STAKE * STAKE_MULTIPLIER);
+        mcopToken.mint(baseAddress, BASE_STAKE * STAKE_MULTIPLIER);
+        mcopToken.mint(orgAddress, ORG_STAKE * STAKE_MULTIPLIER);  
+        mcopToken.mint(personalAddress, PERSONAL_STAKE * STAKE_MULTIPLIER); 
+    
     }
-
-    function setMaxBuyLimit(uint256 limit)
-        public
-        onlyOwner
-        earlierThan(endTime)
-    {
-        maxBuyLimit = limit;
-    }
-
-    function setMinBuyLimit(uint256 limit)
-        public
-        onlyOwner
-        earlierThan(endTime)
-    {
-        minBuyLimit = limit;
-    }
-
-    /// @dev batch set quota for user admin
-    /// if openTag <=0, removed 
-    function setWhiteList(address[] users, uint openTag)
-        public
-        onlyOwner
-        earlierThan(endTime)
-    {
-        require(saleNotEnd());
-        // WhiteList(users[0], openTag);
-        for (uint i = 0; i < users.length; i++) {
-            //WhiteList(users[i], openTag);
-            fullWhiteList[users[i]] = openTag;
-        }
-    }
-
-
-    /// @dev batch set quota for early user quota
-    /// if openTag <=0, removed 
-    function addWhiteList(address user, uint openTag)
-        public
-        onlyOwner
-        earlierThan(endTime)
-    {
-        require(saleNotEnd());
-        //WhiteList(user, openTag);
-        fullWhiteList[user] = openTag;
-
-    }
-
-    /// @dev Emergency situation
-    function setWallet(address newAddress)  external onlyOwner { 
-        NewWallet(owner, wallet, newAddress);
-        wallet = newAddress; 
-    }
-
-    /// @return true if sale not ended, false otherwise.
-    function saleNotEnd() constant internal returns (bool) {
-        return now < endTime && openSoldTokens < MAX_OPEN_SOLD;
-    }
-
     /**
-     * Fallback function 
-     * 
-     * @dev If anybody sends Ether directly to this  contract, consider he is getting mcop token
-     */
-    function () public payable {
-      buyMPC(msg.sender);
+    /// @notice No tipping! (Hopefully, we can prevent user accidents.)
+    */
+    function() external payable {
+        // no public sale
     }
-
-    /*
-     * PUBLIC FUNCTIONS
-     */
-    /// @dev Exchange msg.value ether to MCOP for account recepient
-    /// @param receipient MCOP tokens receiver
-    function buyMPC(address receipient) 
-        public 
-        payable 
-        whenNotPaused  
-        ceilingNotReached 
-        earlierThan(endTime)
-        validAddress(receipient)
-        returns (bool) 
-    {
-        require(msg.value >= minBuyLimit);
-        require(msg.value <= maxBuyLimit);
-        // Do not allow contracts to game the system
-        require(!isContract(msg.sender));        
-
-        require(tx.gasprice <= 50000000000 wei);
-
-        uint inWhiteListTag = fullWhiteList[receipient];
-        //CheckWhiteList(receipient, inWhiteListTag);
-        require(inWhiteListTag>0);
-        
-        doBuy(receipient);
-
-        return true;
-    }
-
-
-    /// @dev Buy mcop token normally
-    function doBuy(address receipient) internal {
-        // protect partner quota in stage one
-        uint tokenAvailable = MAX_OPEN_SOLD.sub(openSoldTokens);
-        require(tokenAvailable > 0);
-        uint toFund;
-        uint toCollect;
-        (toFund, toCollect) = costAndBuyTokens(tokenAvailable);
-        if (toFund > 0) {
-            require(mcopToken.mint(receipient, toCollect));         
-            wallet.transfer(toFund);
-            openSoldTokens = openSoldTokens.add(toCollect);
-            NewSale(receipient, toFund, toCollect);             
-        }
-
-        // not enough token sale, just return eth
-        uint toReturn = msg.value.sub(toFund);
-        if (toReturn > 0) {
-            msg.sender.transfer(toReturn);
-        }
-    }
-
-    /// CONSTANT METHODS
-    /// @dev Get current exchange rate
-    function priceRate() public view returns (uint) {
-        if (startTime <= now && now < startTime + 1 weeks ) {
-            return  PRICE_RATE_FIRST;
-        }else if (startTime + 1 weeks <= now && now < startTime + 2 weeks ) {
-            return PRICE_RATE_SECOND;
-        }else if (startTime + 2 weeks <= now && now < endTime) {
-            return PRICE_RATE_LAST;
-        }else {
-            assert(false);
-        }
-        return now;
-    }
-
-    /// @dev Utility function for calculate available tokens and cost ethers
-    function costAndBuyTokens(uint availableToken) constant internal returns (uint costValue, uint getTokens) {
-        // all conditions has checked in the caller functions
-        uint exchangeRate = priceRate();
-        getTokens = exchangeRate * msg.value;
-
-        if (availableToken >= getTokens) {
-            costValue = msg.value;
-        } else {
-            costValue = availableToken / exchangeRate;
-            getTokens = availableToken;
-        }
-    }
-
-    /// @dev Internal function to determine if an address is a contract
-    /// @param _addr The address being queried
-    /// @return True if `_addr` is a contract
-    function isContract(address _addr) constant internal returns(bool) {
-        uint size;
-        if (_addr == 0) {
-            return false;
-        }
-
-        assembly {
-            size := extcodesize(_addr)
-        }
-        return size > 0;
-    }
-
     // release lock token 
-    function releaseLockToken()  external onlyOwner {
+    function releaseLockToken() external {
         tokenTimelock.release();
+    }
+
+    // @dev withdraw to owner.
+    function withdrawBalance() external {
+        uint256 balance = this.balance;
+        owner.transfer(balance);
     }
 }

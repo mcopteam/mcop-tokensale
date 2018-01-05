@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/token/PausableToken.sol';
 
@@ -11,20 +11,13 @@ contract MCOPToken is PausableToken {
 
     /// Constant token specific fields
     string public constant name = "MCOPToken";
-    string public constant symbol = "MPC";
+    string public constant symbol = "MLB";
     uint public constant decimals = 18;
 
-    /// mcop total tokens supply
-    uint public maxTotalSupply;
 
     /// Fields that are only changed in constructor
     /// mcop sale  contract
     address public minter; 
-
-    /// ICO start time
-    uint public startTime;
-    /// ICO end time
-    uint public endTime;
 
     /*
      * MODIFIERS
@@ -38,12 +31,6 @@ contract MCOPToken is PausableToken {
         assert(now > x);
         _;
     }
-
-    modifier maxTokenAmountNotReached (uint amount){
-        assert(totalSupply.add(amount) <= maxTotalSupply);
-        _;
-    }
-
     modifier validAddress( address addr ) {
         require(addr != address(0x0));
         require(addr != address(this));
@@ -54,20 +41,14 @@ contract MCOPToken is PausableToken {
      * CONSTRUCTOR 
      * 
      * @dev Initialize the MCOP Token
-     * @param _minter The MCOPCrowdSale Contract 
-     * @param _maxTotalSupply total supply token    
-     * @param _startTime ICO start time
-     * @param _endTime ICO End Time
+     * @param _minter The MCOPCrowdSale Contract  
      */
-    function MCOPToken(address _minter, address _admin, uint _maxTotalSupply, uint _startTime, uint _endTime) 
+    function MCOPToken(address _minter, address _admin) 
         public 
-        validAddress(_admin)
         validAddress(_minter)
-        {
+        validAddress(_admin)
+    {
         minter = _minter;
-        startTime = _startTime;
-        endTime = _endTime;
-        maxTotalSupply = _maxTotalSupply;
         transferOwnership(_admin);
     }
 
@@ -83,10 +64,8 @@ contract MCOPToken is PausableToken {
     function mint(address receipent, uint amount)
         external
         onlyMinter
-        maxTokenAmountNotReached(amount)
         returns (bool)
     {
-        require(now <= endTime);
         balances[receipent] = balances[receipent].add(amount);
         totalSupply = totalSupply.add(amount);
         return true;
