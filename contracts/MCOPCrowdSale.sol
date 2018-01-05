@@ -18,10 +18,10 @@ contract MCOPCrowdSale is Pausable {
     // release lock token after time
     uint public constant LOCK_TIME =  180 days;
 
-    uint public constant LOCK_STAKE = 48;  
-    uint public constant TEAM_STAKE = 8;     
+    uint public constant LOCK_STAKE = 48;   
+    uint public constant TEAM_STAKE = 8;    // for team 
     uint public constant BASE_STAKE = 4;     
-    uint public constant ORG_STAKE = 15;      
+    uint public constant ORG_STAKE = 15;     
     uint public constant PERSONAL_STAKE = 25;
 
     // max open sale tokens

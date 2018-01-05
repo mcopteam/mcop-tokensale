@@ -73,29 +73,29 @@ contract('Test MCOPCrowdSale', function(accounts) {
     console.log("tokenTimelock: tokenTimelock: " + localContractAddress);
     let lockContract = await TokenTimelock.at(localContractAddress) 
     
-    //必须把release的时间改为  3 seconds 才能正确测试这段代码
-    try{
-      result = await saleContract.releaseLockToken();
-      console.log(result);
-    }catch(err){
-      console.log(err);
-      for(var i = 0; i < 1000000000; i++){
-        var j = i; 
-        j = j*10;
-        j = j**10;
-      }
+    // //必须把release的时间改为  3 seconds 才能正确测试这段代码
+    // try{
+    //   result = await saleContract.releaseLockToken();
+    //   console.log(result);
+    // }catch(err){
+    //   console.log(err);
+    //   for(var i = 0; i < 1000000000; i++){
+    //     var j = i; 
+    //     j = j*10;
+    //     j = j**10;
+    //   }
 
-      console.log('releaseLockToken')
-      result = await saleContract.releaseLockToken();
-      console.log(result);
+    //   console.log('releaseLockToken')
+    //   result = await saleContract.releaseLockToken();
+    //   console.log(result);
 
-      let lockBalance = await tokenContract.balanceOf(accounts[0]);
-      assert.equal(helper.fromWei(lockBalance),  MCOP_TOTAL_SUPPLY*LOCK_STAKE/DIVISOR_STAKE, "lockBalance is ok");
+    //   let lockBalance = await tokenContract.balanceOf(accounts[0]);
+    //   assert.equal(helper.fromWei(lockBalance),  MCOP_TOTAL_SUPPLY*LOCK_STAKE/DIVISOR_STAKE, "lockBalance is ok");
 
-      let lockContractBalance = await tokenContract.balanceOf(localContractAddress);
-      console.log("lockContractBalance: " + helper.fromWei(lockContractBalance).valueOf());
-      assert.equal(helper.fromWei(lockContractBalance),  0, "lockContractBalance is ok");
-    }
+    //   let lockContractBalance = await tokenContract.balanceOf(localContractAddress);
+    //   console.log("lockContractBalance: " + helper.fromWei(lockContractBalance).valueOf());
+    //   assert.equal(helper.fromWei(lockContractBalance),  0, "lockContractBalance is ok");
+    // }
 });
 
 });
